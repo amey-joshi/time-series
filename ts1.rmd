@@ -1,0 +1,99 @@
+---
+title: "Time-Series-1"
+author: "Amey Joshi"
+date: "13/06/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("astsa")
+set.seed(24041996)
+```
+
+## What is a time series?
+- A stochastic process is to a time series what a random variable is to a number.
+The latter is a realisation of the former in an experiment. Repeating the 
+experiment will result in a different time series.
+- Some examples:
+  - (Finance) asset prices
+  - (Economics) GDP, unemployment, inflation
+  - (Epidemiology) # cases of infection
+  - (Demography) birth and death rates
+  - (Medicine) blood sugar levels in a day, ECG, EEG, fMRI
+  - (Physics) wind speeds, ocean temperature, solar activity
+
+## How do time series look? J&F quarterly earnings
+
+```{r}
+plot(jj, 
+     type="o", 
+     xlab = "year", 
+     ylab="quarterly earnings", 
+     main="Johnson&Johnson")
+```
+
+Key observations:
+
+- Earnings are rising
+- But not monotonically, there are clearly discernable cycles.
+- As time goes by, the drop in earnings gets more severe.
+
+## How do time series look? Sensex
+
+```{r}
+sensex_master <- read.csv("sensex.csv")
+plot(sensex_master$Close, cex=0.1, ylab = "Sensex", main = "Since 3-Jan-2000")
+```
+
+Key observations:
+
+- In general the index is rising, except for a few downturns.
+- We can see turbulence around 2000 and 4000 but otherwise it 'appears smooth'.
+
+Let us therefore look at the daily returns.
+```{r}
+delta_sensex <- diff(sensex_master$Close)
+daily_returns <- delta_sensex/sensex_master$Close[seq_along(delta_sensex)]
+plot(daily_returns, cex=0.1, type = "o", ylab = "Daily return", main = "Since 3-Jan-2000")
+```
+
+Key observations:
+
+- Unlike the sensex series, the returns appear to have periodic bouts of high
+variation.
+- If we were to measure the variance over a moving window we will see a sharp
+change in its values although the series seems to have a mean of zero.
+
+## How do time series look? Ecological example
+This is the plot of southern oscillation index and the number of new fish in the
+Pacific. The southern oscillation index (SOI) is the difference between air 
+pressures at Tahiti and Darwin in Australia. Prolonged periods of negative 
+(positive) SOI values coincide with abnormally warm (cold) ocean waters across 
+the eastern tropical Pacific typical of El Niño (La Niña) episodes.
+```{r}
+plot(soi, ylab = "", xlab = "", main = "Southern oscillation index")
+plot(rec, ylab = "", xlab = "", main = "# fish")
+```
+
+Key observations:
+
+- Both series show a periodicity
+- The variation of SOI is small until the series jumps from one level to another.
+- Periodic phenomena are usually studied in the frequency domain.
+- The fish population seems to be a response to the SOI. Such causal relations
+are studied using transfer functions.
+
+## Why time series differs from other samples?
+- Unlike the usual samples whose members are selected independently of each other
+the observations in a time series are correlated.
+- Sensex ranges from 2600.12 to 40267.62 since 3-Jan-2000. If we choose a random
+sample of numbers in this range and plot them we will observe the points to be
+spread uniformly across the plot area. We also plot the sensex to show that a 
+time series sample is far more orderly than the random sample.
+```{r}
+random_sample <- runif(n = nrow(sensex_master), min = min(sensex_master$Close), max = max(sensex_master$Close))
+plot(random_sample, cex=0.1, type="p", ylab = "random sample", main = "Time series versus random sample")
+points(sensex_master$Close, cex = 0.1, col = "red")
+legend("topleft", legend = c("sample", "sensex"), col = c("black", "red"), pch = 1, cex = .8, pt.cex = .1)
+```
