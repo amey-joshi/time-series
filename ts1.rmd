@@ -12,6 +12,8 @@ set.seed(24041996)
 ```
 
 ## What is a time series?
+- Time series is a collection of random variables indexed according to the order
+they were obtained in time.
 - A stochastic process is to a time series what a random variable is to a number.
 The latter is a realisation of the former in an experiment. Repeating the 
 experiment will result in a different time series.
@@ -22,8 +24,9 @@ experiment will result in a different time series.
   - (Demography) birth and death rates
   - (Medicine) blood sugar levels in a day, ECG, EEG, fMRI
   - (Physics) wind speeds, ocean temperature, solar activity
+- Time series analysis is closely related to signal processing.
 
-## How do time series look? J&F quarterly earnings
+## How do time series look? J&J quarterly earnings
 
 ```{r}
 plot(jj, 
@@ -54,8 +57,15 @@ Key observations:
 Let us therefore look at the daily returns.
 ```{r}
 delta_sensex <- diff(sensex_master$Close)
-daily_returns <- delta_sensex/sensex_master$Close[seq_along(delta_sensex)]
-plot(daily_returns, cex=0.1, type = "o", ylab = "Daily return", main = "Since 3-Jan-2000")
+daily_returns <-
+  delta_sensex / sensex_master$Close[seq_along(delta_sensex)]
+plot(
+  daily_returns,
+  cex = 0.1,
+  type = "o",
+  ylab = "Daily return",
+  main = "Since 3-Jan-2000"
+)
 ```
 
 Key observations:
@@ -92,8 +102,66 @@ sample of numbers in this range and plot them we will observe the points to be
 spread uniformly across the plot area. We also plot the sensex to show that a 
 time series sample is far more orderly than the random sample.
 ```{r}
-random_sample <- runif(n = nrow(sensex_master), min = min(sensex_master$Close), max = max(sensex_master$Close))
-plot(random_sample, cex=0.1, type="p", ylab = "random sample", main = "Time series versus random sample")
+random_sample <-
+  runif(
+    n = nrow(sensex_master),
+    min = min(sensex_master$Close),
+    max = max(sensex_master$Close)
+  )
+plot(
+  random_sample,
+  cex = 0.1,
+  type = "p",
+  ylab = "random sample",
+  main = "Time series versus random sample"
+)
 points(sensex_master$Close, cex = 0.1, col = "red")
-legend("topleft", legend = c("sample", "sensex"), col = c("black", "red"), pch = 1, cex = .8, pt.cex = .1)
+legend(
+  "topleft",
+  legend = c("sample", "sensex"),
+  col = c("black", "red"),
+  pch = 1,
+  cex = .8,
+  pt.cex = .1
+)
 ```
+
+## Continuous and discrete time series
+- It is common to join the points of a time series to make it appear as if it
+were recorded continuously.
+- Some series are genuinely discrete.
+- A continuous time series is sampled at a certain frequency to obtain a discrete
+series.
+  - The sampling has to be sufficiently frequent to get a faithful representation
+  of the underlying series.
+  - Recall Nyquist criterion.
+  
+## A few examples of simulated time series
+White noise
+```{r}
+plot(rnorm(1000), ylab="y[n]", main = "White noise", cex = 0.1, type = "o")
+```
+
+Random walk
+```{r}
+plot(cumsum(sample(x = c(-1, 1), replace = TRUE, size = 1000)), 
+     cex = .1, type = "o", main = "Random walk", ylab = "Displacement")
+```
+
+Random walk with drift
+```{r}
+plot(
+  cumsum(0.05 + sample(
+    x = c(-1, 1),
+    replace = TRUE,
+    size = 1000
+  )),
+  cex = .1,
+  type = "o",
+  main = "Random walk with drift",
+  ylab = "Displacement"
+)
+```
+
+Always view a time series but be aware that often times it is hard to find out
+its characteristics..
