@@ -2,11 +2,11 @@
 title: "Time-Series-1"
 author: "Amey Joshi"
 date: "13/06/2019"
-output: html_document
+output: beamer_presentation
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 library("astsa")
 set.seed(24041996)
 ```
@@ -26,35 +26,41 @@ experiment will result in a different time series.
   - (Physics) wind speeds, ocean temperature, solar activity
 - Time series analysis is closely related to signal processing.
 
-## How do time series look? J&J quarterly earnings
+## How do time series look? J&J quarterly earnings - 1
 
 ```{r}
-plot(jj, 
-     type="o", 
-     xlab = "year", 
-     ylab="quarterly earnings", 
-     main="Johnson&Johnson")
+plot(
+  jj,
+  type = "o",
+  xlab = "year",
+  ylab = "quarterly earnings",
+  main = "Johnson&Johnson",
+  cex = 0.1
+)
 ```
 
+## How do time series look? J&J quarterly earnings - 2
 Key observations:
 
 - Earnings are rising
 - But not monotonically, there are clearly discernable cycles.
 - As time goes by, the drop in earnings gets more severe.
 
-## How do time series look? Sensex
+## How does a time series look? Sensex - 1
 
 ```{r}
 sensex_master <- read.csv("sensex.csv")
 plot(sensex_master$Close, cex=0.1, ylab = "Sensex", main = "Since 3-Jan-2000")
 ```
 
+## How does a time series look? Sensex - 2
 Key observations:
 
 - In general the index is rising, except for a few downturns.
 - We can see turbulence around 2000 and 4000 but otherwise it 'appears smooth'.
 
-Let us therefore look at the daily returns.
+## How does a time series look? Sensex daily returns - 1
+
 ```{r}
 delta_sensex <- diff(sensex_master$Close)
 daily_returns <-
@@ -68,6 +74,7 @@ plot(
 )
 ```
 
+## How does a time series look? Sensex daily returns - 2
 Key observations:
 
 - Unlike the sensex series, the returns appear to have periodic bouts of high
@@ -75,17 +82,21 @@ variation.
 - If we were to measure the variance over a moving window we will see a sharp
 change in its values although the series seems to have a mean of zero.
 
-## How do time series look? Ecological example
+## How does a time series look? Ecological example - 1
 This is the plot of southern oscillation index and the number of new fish in the
 Pacific. The southern oscillation index (SOI) is the difference between air 
 pressures at Tahiti and Darwin in Australia. Prolonged periods of negative 
 (positive) SOI values coincide with abnormally warm (cold) ocean waters across 
 the eastern tropical Pacific typical of El Niño (La Niña) episodes.
+
+## How does a time series look? Ecological example - 2
 ```{r}
-plot(soi, ylab = "", xlab = "", main = "Southern oscillation index")
-plot(rec, ylab = "", xlab = "", main = "# fish")
+par(mfrow = c(2, 1), oma = c(5,4,0,0)+0.1,mar = c(0,0,2,2))
+plot(soi, ylab = "", xlab = "", main = "SOI (top) and #fish (bottom)")
+plot(rec, ylab = "", xlab = "")
 ```
 
+## How does a time series look? Ecological example - 3
 Key observations:
 
 - Both series show a periodicity
@@ -94,13 +105,15 @@ Key observations:
 - The fish population seems to be a response to the SOI. Such causal relations
 are studied using transfer functions.
 
-## Why time series differs from other samples?
+## Why time series differs from other samples? - 1
 - Unlike the usual samples whose members are selected independently of each other
 the observations in a time series are correlated.
 - Sensex ranges from 2600.12 to 40267.62 since 3-Jan-2000. If we choose a random
 sample of numbers in this range and plot them we will observe the points to be
 spread uniformly across the plot area. We also plot the sensex to show that a 
 time series sample is far more orderly than the random sample.
+
+## Why time series differs from other samples? - 2
 ```{r}
 random_sample <-
   runif(
@@ -136,19 +149,18 @@ series.
   of the underlying series.
   - Recall Nyquist criterion.
   
-## A few examples of simulated time series
-White noise
+## A simulated time series - White noise
 ```{r}
 plot(rnorm(1000), ylab="y[n]", main = "White noise", cex = 0.1, type = "o")
 ```
 
-Random walk
+## A simulated time series - Random walk
 ```{r}
 plot(cumsum(sample(x = c(-1, 1), replace = TRUE, size = 1000)), 
      cex = .1, type = "o", main = "Random walk", ylab = "Displacement")
 ```
 
-Random walk with drift
+## A simulated time series - Random walk with drift
 ```{r}
 plot(
   cumsum(0.05 + sample(
@@ -163,5 +175,64 @@ plot(
 )
 ```
 
-Always view a time series but be aware that often times it is hard to find out
-its characteristics..
+## Statistical description of time series - 1
+- A full statistical description of a time series is its joint probability
+distribution $$
+F_{t_1\cdots t_n}(c_1, \ldots, c_n) = \mathrm{P}(x_{t_1} \le c_1, \ldots x_{t_n} \le c_n)
+$$
+- A marginal distribution at time $t$ is $F_t(c) = \mathrm{P}(x_t \le c)$. The
+corresponding density function is
+$$
+f_t(x) = \frac{\partial F_t}{\partial x}
+$$
+- The mean function is defined as
+$$
+\mu_{xt} = \mathrm{E}(x_t) = \int x_t f_t(x) dx
+$$
+- Note that the mean function depends on $t$. Every $x_t$ will, in general, have 
+a different expectation.
+
+## Statistical description of time series - 2
+- Recall the formula for covariance between random variables $X$ and $Y$, 
+$$
+\text{cov}(X, Y) = \mathrm{E}\left[(X - \mathrm{E}(X))(Y - \mathrm{E}(Y))\right]
+$$
+- The same idea is applied to the time series to get 'auto'-covariance
+$$
+\gamma_x(s, t) = \mathrm{E}\left[(x_s - \mu_s)(x_t - \mu_t)\right]
+$$
+
+- The autocovariance function is the covariance between two 'data points' of a 
+time series.
+
+## Statistical description of time series - 3
+- Analgous to the correlation between random variables, the auto-correlation 
+function (ACF) of a time series is
+$$
+\rho_x(s, t) = \frac{\gamma_x(s, t)}{\sigma_x(s)\sigma_x(t)}
+$$
+- It follows immediately that $\rho_x(s, s) = 1$.
+- ACF of a smooth time series will be non-zero even if $s$ and $t$ are far from
+each other. On the other hand, that of a choppy series will decay to zero very 
+soon. In the extreme case of white noise
+$$
+\rho(s, t) = \begin{cases}
+1 & s =t \\
+0 & s \ne t
+\end{cases}
+$$
+
+## Statistical description of time series - 4
+- ACF answers the question, "Can we predict $x_t$ if we know $x_s$ using a 
+linear relation?".
+- Supposing $x_t = \beta_0 + \beta_1 x_s$. That is, $x_t$ is prefectly predicted
+using $x_s$. Then $\rho(s t) = \pm 1$.
+- We can analogously define the cross-covariance function between two time
+series $x_y$ and $y_t$ as
+$$
+\gamma_{xy}(s, t) = \mathrm{E}\left[(x_s - \mu_x)(y_t - \mu_t)\right]
+$$
+- The cross-correlation function is
+$$
+\rho_{xy}(s, t) = \frac{\gamma_{xy}(s, t)}{\sigma_x(s)\sigma_y(t)}
+$$
