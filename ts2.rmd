@@ -1,0 +1,165 @@
+---
+title: "Time-Series-2"
+author: "Amey Joshi"
+date: "16/06/2019"
+output: beamer_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library("astsa")
+set.seed(24041996)
+```
+
+## Strictly stationary time series - 1
+A time series $\{x_t\}$ is called strictly stationary if
+$$
+\mathrm{P}(x_{t_1} < c_1 \ldots x_{t_k} < c_k) = 
+\mathrm{P}(x_{t_{1 + h}} < c_1 \ldots x_{t_{k + h}} < c_k)
+$$
+for all $k \ge 1$, all $t_1, \ldots, t_k$ and all time shifts $h \in \boldsymbol{Z}$
+
+What does this mean?
+
+- Choose any $k$ consecutive points of the time series. For any $h \in \boldsymbol{Z}$ 
+select points that are a distance $h$ away from the previous set. If the time
+series is stationary then the statistical properties of the two sets of points
+are identical.
+- By statistical properties we mean the joint distribution. Equivalently, all
+moments of the sets are identical.
+- In particular, $\rho_x(s, t) = \rho_x(s + h, t + h)$ for all $h \in 
+\boldsymbol{Z}$.
+
+## Strictly stationary time series - 2
+- The property of being stationary is \emph{very} strong.
+- Although one can construct a stationary time series one can never confirm that
+a given time series is stationary.
+  - Recall that the joint probability distribution has to be identical for all
+  $h \in \boldsymbol{Z}$.
+- Some time series can be classified as non-stationary by just plotting them.
+  - The rising trend of the sensex.
+  - A random walk with drift.
+- On the other hand, some time series 'appear to be' stationary.
+  - The white noise. (It is stationary.)
+  - The SOI and # fish series.
+- What about?
+  - Daily sensex returns.
+  - Random walk.
+  
+## Weakly stationary time series
+A time series $\{x_t\}$ is said to be weakly stationary if
+
+- If mean value $\mu_t$ is independent of $t$.
+- If $\rho(s, t) = \rho(|s - t|)$ for all $s, t$.
+
+A widely accepted convention is to call a weakly stationary time series as
+stationary. 
+
+Note that $\rho(s, t) = \rho(|s - t|) \Rightarrow \rho(s, s+h) = \rho(h)$.
+
+## Descriptive statistics of time series - 1
+```{r}
+par(mfrow = c(3, 1))
+acf(soi, 48, main = "SOI")
+acf(rec, 48, main = "# fish")
+ccf(soi, rec, 48, main = "SOI v. # fish", ylab = "CCF")
+```
+
+## Descriptive statistics of time series - 2
+Key observations
+
+- The '# fish' series appears to be lagging behind the SOI series. When SOI peaks
+we can expect the # fish to peak 'after some time'.
+- The CCF plot corroborates this belief. There is a strong CCF signal at $h = -6$.
+It seems like the # fish respond to SOI with a lag of $6$ months.
+  - Alternatively, # fish at time $t$ are strongly correlated with SOI level at
+  time $t - 6$.
+  - Further a negative value of CCF indicates that a rise in SOI level leads to
+  a drop in the # fish.
+- Such effects are fairly common in economic analysis. A sagging industrial
+production might foretell that the economy is going to slow down a few months
+down the line.
+
+## Spectral analysis - 1
+- A reasonably smooth (I choose to be non-technical) function can be expressed
+as a sum of sines and cosines. 
+- If $x(t)$ is the time series then
+$$
+x(t) = \sum_{\nu=-\infty}^\infty c_\nu \exp\left(i\nu t\right)
+$$
+- The 'amplitude' of a sinusoidal wave is $c_n$ given by
+$$
+c_\nu = \frac{1}{2\pi}\int_{-\pi}^{\pi}x(t)\exp\left(-i\nu t\right)dt.
+$$
+- The magnitude of $c_\nu$ indicates the dominance of the wave of frequency $\nu$.
+- A plot of $|c_n|^2$ versus $n$ is called the spectrum or the periodogram.
+
+## Spectral analysis - 2
+Sunspots are known to peak every $11$ years. A time series of the number of
+sunspots seen from $1700$ to $1988$ is
+```{r}
+plot(sunspot.year, ylab = "# sunspots", main = "Yearly sunspots")
+```
+
+## Spectral analysis - 3
+A periodogram of the yearly sunspots shows highest power at $n = 1/11.1 = 0.0909$.
+```{r}
+mvspec(sunspot.year, log = "no", main = "Periodogram of yearly sunspots")
+abline(v = 1/11.1, lty = 2, col = "red")
+```
+
+## Spectral analysis - 4
+The southern oscillations are known to be quasi-periodic with a frequency betwee
+$4$ and $7$ years.
+```{r}
+mvspec(soi, log = "no", main = "Periodogram of SOI")
+abline(v = 0.2, lty = 2, col = "red")
+```
+
+## Spectral analysis - 5
+A periodogram of the # fish shows a dominant cycle of $1$ year and another one of
+$4$ years.
+```{r}
+mvspec(rec, log = "no", main = "Periodogram of # fish")
+abline(v = 0.25, lty = 2, col = "red")
+```
+
+## Spectral analysis - 6
+This is the why white noise is called so.
+```{r}
+mvspec(rnorm(5000), log = "no", main = "Periodogram of white noise")
+```
+
+## What does spectral analysis give us?
+- The dominant frequencies indicate seasonality.
+- You can remove seasonal effects by transforming the time series through an
+appropriate filter.
+- If the time signal is very noisy, you can smoothen it by transforming the
+time series through a low pass filter.
+- Let's apply what we learnt to the sensex daily returns.
+
+## Sensex daily returns - 1
+The periodogram of daily returns is:
+```{r}
+sensex_master <- read.csv("sensex.csv")
+delta_sensex <- diff(sensex_master$Close)
+daily_returns <- delta_sensex / sensex_master$Close[seq_along(delta_sensex)]
+mvspec(daily_returns, log = "no", main = "Periodogram of daily returns")
+```
+
+## Sensex daily returns - 2
+- Looks similar to white noise yet it is clear that the higher frequencies
+are present to a lesser extent.
+- It is quite possible that the very high frequencies are the inherent fluctuations
+in the returns. In order to check if there is anything of interest at a slightly
+lower frequency, we must filter out the noise.
+- We therefore pass the daily returns time series through an averaging filter.
+```{r echo = FALSE}
+smoothed_returns <- filter(daily_returns, rep(1/3,3))
+```
+
+## Sensex daily returns - 3
+The periodogram of the smoothed daily returns time series is
+```{r}
+mvspec(smoothed_returns[!is.na(smoothed_returns)], main = "Smoothed daily returns")
+```
