@@ -217,7 +217,7 @@ each other. On the other hand, that of a choppy series will decay to zero very
 soon. In the extreme case of white noise
 $$
 \rho(s, t) = \begin{cases}
-1 & s =t \\
+1 & s = t \\
 0 & s \ne t
 \end{cases}
 $$
@@ -226,7 +226,7 @@ $$
 - ACF answers the question, "Can we predict $x_t$ if we know $x_s$ using a 
 linear relation?".
 - Supposing $x_t = \beta_0 + \beta_1 x_s$. That is, $x_t$ is prefectly predicted
-using $x_s$. Then $\rho(s t) = \pm 1$.
+using $x_s$. Then $\rho(s, t) = \pm 1$.
 - We can analogously define the cross-covariance function between two time
 series $x_y$ and $y_t$ as
 $$
