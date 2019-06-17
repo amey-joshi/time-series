@@ -1,0 +1,28 @@
+---
+title: "Time-series-3"
+author: "Amey Joshi"
+date: "17/06/2019"
+output: beamer_presentation
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(astsa)
+```
+
+## Time series models
+- We observed that values in a time series data are not independent of each other.
+- We respect the principle of causality and assume that past values affect the
+present value.
+- How many past values should we consider?
+  - One
+  - A few
+  - All
+- Answer to this question decides the modelling technique.
+- How do we answer the question? As usual, looking at the data may help.
+
+## Dependence on past - SOI data
+```{r}
+lag1.plot(soi, 12)
+```
+
