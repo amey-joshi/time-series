@@ -8,6 +8,7 @@ output: beamer_presentation
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 library("astsa")
+library("tseries")
 set.seed(24041996)
 ```
 
@@ -80,6 +81,41 @@ It seems like the # fish respond to SOI with a lag of $6$ months.
 production might foretell that the economy is going to slow down a few months
 down the line.
 
+## Statistical tests for stationary - 1
+- Augmented Dickey Fuller test
+- Phillips-Perron unit root test
+
+They are available in the R package 'tseries'. Refer to the help pages for 
+more information.
+
+\tiny
+```{r}
+sensex_master <- read.csv("sensex.csv")
+sensex_closing <- sensex_master$Close
+delta_sensex <- diff(sensex_closing)
+daily_returns <- delta_sensex / sensex_closing[seq_along(delta_sensex)]
+adf.test(sensex_closing)
+```
+
+A high value of $p$ suggests that we should not reject the null hypothesis.
+
+```{r}
+suppressWarnings(adf.test(daily_returns))
+```
+
+In this case, we can reject the null hypothesis.
+
+## Statistical tests for stationary - 2
+We check the same data sets now using the Phillips-Peron test.
+\tiny
+```{r}
+pp.test(sensex_closing)
+suppressWarnings(pp.test(daily_returns))
+```
+
+\normalsize
+The outcomes of the two tests agree with each other.
+
 ## Spectral analysis - 1
 - A reasonably smooth (I choose to be non-technical) function can be expressed
 as a sum of sines and cosines. 
@@ -141,9 +177,6 @@ time series through a low pass filter.
 ## Sensex daily returns - 1
 The periodogram of daily returns is:
 ```{r}
-sensex_master <- read.csv("sensex.csv")
-delta_sensex <- diff(sensex_master$Close)
-daily_returns <- delta_sensex / sensex_master$Close[seq_along(delta_sensex)]
 mvspec(daily_returns, log = "no", main = "Periodogram of daily returns")
 ```
 
