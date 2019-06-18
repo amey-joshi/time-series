@@ -8,6 +8,7 @@ output: beamer_presentation
 ```{r setup, include=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 library(astsa)
+library(tseries)
 ```
 
 ## Time series models
@@ -21,8 +22,120 @@ present value.
 - Answer to this question decides the modelling technique.
 - How do we answer the question? As usual, looking at the data may help.
 
-## Dependence on past - SOI data
+## Dependence on past - 1
 ```{r}
 lag1.plot(soi, 12)
 ```
 
+## Dependence on past - 2
+Notice that
+- there is a strong positive correlation with lags $1, 2, 11$ and $12$.
+- there is a moderate negative correlation with lags $6$ and $7$.
+
+Remember that we are talking about correlation. We do not attempt to answer the
+question "Why is there a correlation?".
+
+We can do a similar visual analysis even two different time series. For instance,
+we can find out if the number of fish has a correlation with SOI with a lag.
+
+## Dependence on past - 3
+```{r}
+lag2.plot(soi, rec, 11)
+```
+
+## Dependence on past - 4
+- There is a strong nonlinear correlation between the number of fish and SOI 
+with lags $5, 6, 7, 8$ and $9$.
+- SOI affects the number of fish with a lag of half a year.
+- Visualization is a valuable tool to determine parameters of models we will
+describe next.
+
+If SOI of this this month has a correlation with SOI of $1, 2, 11$ and $12$
+ago, can we build a regression model with the latter data as predictors? Can
+we model a time series as a regression over its own past values?
+
+This is the idea behind autoregressive (AR) models.
+
+## Are SOI and # fish data time series stationary?
+\tiny
+```{r}
+adf.test(soi)
+```
+\normalsize
+The very small $p$ value suggests that we can reject the null hypothesis.
+\tiny
+```{r}
+adf.test(rec)
+```
+\normalsize
+The time series of number of fish too can be assumed to be stationary.
+
+## What has stationarity to do with building a model?
+We build an AR model based on statistical relation between a data point and the
+past data points. If the statistical nature is going to change over time then our
+model will no longer be valid.
+
+It is a good idea to check stationarity while building AR models and also the
+ones founded on similar ideas like the moving average (MA) models or a 
+combination of the two, namely ARMA and ARIMA.
+
+What if a time series is not stationary? There are other techniques like 
+GARCH.
+
+## $AR$ models - 1
+A time series $x_t$ is modelled as
+$$
+x_t - \mu = \beta_1(x_{t-1} - \mu) + \epsilon_t,
+$$
+where $\alpha$ is a constant, $\mu$ is the mean of the process and $\epsilon_t$
+is a stationary white noise. We rearrange the above equation to get
+$$
+x_t = \beta_0 + \beta_1 x_{t-1} + \epsilon_t,
+$$
+where $\beta_0 = (1 - \alpha)\mu$. This form brings out the regression structure
+of the model. It is called $AR(1)$ because $x_t$ depends only on $x_{t-1}$.
+
+An $AR(p)$ model is
+$$
+x_t = \beta_0 + \beta_1 x_{t-1} + \cdots + \beta_p x_{t-p} + \epsilon_t.
+$$
+
+## AR models - 2
+AR models have an infinite memory. One can easily conclude that
+$$
+x_t = \beta_0(1 + \beta_1 + \cdots + \beta_1^p) + \beta_1^{p+1}x_{t - p - 1} + 
+(\epsilon_t + \beta_1\epsilon_{t-1} + \cdots + \beta_1^p\epsilon_{t-p}).
+$$
+
+If $\beta_1 < 1$ then the influnece of past fades away for large $p$. 
+
+An $AR(p)$ process is not always stationary. To determine if it is, we examine the
+roots of the characteristic equation
+$$
+z^p - \beta_1 z^{p-1} - \cdots - \beta_p = 0.
+$$
+If all roots are inside the unit circle then the process is stationary. This is the
+idea behind the Phillips-Perron unit root test.
+
+## MA model - 1
+A time series $x_t$ modelled as
+$$
+x_t - \mu = \epsilon_t - \theta\epsilon_{t-1}
+$$
+is called as $MA(1)$ process. It is easy to check that
+$$
+\rho(h) = \begin{cases}
+-\frac{\theta}{1 + \theta^2} & h = 1 \\
+0 & h > 1.
+\end{cases}
+$$
+An $MA(p)$ process is modelled as
+$$
+x_t = \mu + \epsilon_t - \theta_1\epsilon_{t-1} - \cdots - \theta_p\epsilon_{t-p}
+$$
+where $\theta_1, \ldots, \theta_p$ are \emph{arbitrary} constants and $\epsilon_{t-i}$
+are white noise. Note that $MA$ processes depend on past residuals, not values.
+
+'Moving average' is a rather misleading name. For the constants $\theta_1, \ldots, \theta_p$
+need not be positive and sum up to $1$.
+  

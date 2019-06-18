@@ -96,13 +96,13 @@ delta_sensex <- diff(sensex_closing)
 daily_returns <- delta_sensex / sensex_closing[seq_along(delta_sensex)]
 adf.test(sensex_closing)
 ```
-
+\normalsize
 A high value of $p$ suggests that we should not reject the null hypothesis.
-
+\tiny
 ```{r}
 suppressWarnings(adf.test(daily_returns))
 ```
-
+\normalsize
 In this case, we can reject the null hypothesis.
 
 ## Statistical tests for stationary - 2
