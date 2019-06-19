@@ -61,6 +61,7 @@ This is the idea behind autoregressive (AR) models.
 ```{r}
 adf.test(soi)
 ```
+
 \normalsize
 The very small $p$ value suggests that we can reject the null hypothesis.
 \tiny
@@ -139,3 +140,97 @@ are white noise. Note that $MA$ processes depend on past residuals, not values.
 'Moving average' is a rather misleading name. For the constants $\theta_1, \ldots, \theta_p$
 need not be positive and sum up to $1$.
   
+## Partial correlation - 1
+Sometimes a strong correlation between two random variables $X$ and $Y$ is because
+both of them depend on a common random variable $Z$. One may want to remove the
+effect of $Z$ to find out the intrinsic correlation between $X$ and $Y$. Partial
+correlation is the way to get it. 
+
+Let us first illustrate the effect by means of an example.
+\tiny
+```{r echo=TRUE}
+Z <- seq(1, 10)
+X <- 2*Z + 0.5 * rnorm(10)
+Y <- -3*Z + 0.75 * rnorm(10)
+```
+\normalsize
+In this example $X$ and $Y$ are strongly correlated with $Z$. But if we did not
+know this fact and if we calculate the correlation between them, we get
+\tiny
+```{r}
+cor(X, Y)
+```
+\normalsize
+
+## Partial correlation - 2
+In order to find partial correlation between $X$ and $Y$ we remove the effect 
+of $Z$. This is done by regressing each on of them against $Z$ and removing the 
+fitted model. Equivalently, the partial correlation is the correlation between
+the residuals of the two regressions.
+\tiny
+```{r echo=TRUE}
+X_model <- lm(X ~ Z)
+Y_model <- lm(Y ~ Z)
+cor(X_model$residuals, Y_model$residuals)
+```
+\normalsize
+Thus, the partial correlation between the two variables is quite small.
+
+## Partial auto-correlation function - 1
+In the case of time series $x_t$, we can find the correlation between $x_t$
+and $x_{t-h}$ ignoring the effect of the intervening values. Let $\hat{x}_t$
+be the regression estimate of $x_t$ using $x_{t+1}, \ldots, x_{t+h-1}$ as
+predictors. Let $\hat{x}_{t-h}$ be the regression estimate of $x_{t_h-1}$
+using the \emph{same} predictors. Then the partial autocorrelation function
+(PACF) is defined as
+$$
+\Phi_x(t, t-h) = \frac{E[(x_t - \hat{x}_t)(x_{t-h} - \hat{x}_{t-h})]}{\sigma_x(t)\sigma_x(t-h)}
+$$
+
+Why do we need PACF? To find out the lagged value that has the strongest 
+correlation with the current value. It gives the $p$ in $AR(p)$ model.
+
+## Partial auto-correlation function - 2
+The PACF of the time series of number of fish shows that the partial 
+autocorrelation function is high only for the first and the second
+lags.
+```{r}
+pacf(rec, main = "# fish")
+```
+
+## $ARMA(p, q)$ models.
+Recall, that an $AR(p)$ model is
+$$
+x_t = \beta_0 + \beta_1 x_{t-1} + \cdots + \beta_p x_{t-p} + \epsilon_t.
+$$
+while an $MA(q)$ model is
+$$
+x_t = \mu + \epsilon_t - \theta_1\epsilon_{t-1} - \cdots - \theta_q\epsilon_{t-q}
+$$
+We can combine the two to get $ARMA(p, q)$ model defined by
+$$
+x_t = \beta_0 + \beta_1 x_{t-1} + \cdots + \beta_p x_{t-p} + \epsilon_t - \theta_1\epsilon_{t-1} - \cdots - \theta_q\epsilon_{t-q}
+$$
+Among all the models that can be fitted to a data set, we choose the one with 
+the least number of parameters. Sometimes, an $ARMA(p, q)$ model might be more
+parsimonious than an individual $AR$ or $MA$ models.
+
+## The difference operator $\Delta$ and ARIMA
+The difference operator is defined as
+$$
+\Delta x_t = x_t - x_{t-1}
+$$
+It is easy to check that
+$$
+\Delta^2 x_t = \Delta(x_t - x_{t-1}) = x_t - 2x_{t-1} + x_{t-2}
+$$
+Higher order difference operators $\Delta^d, d \in \boldsymbol{N}$ are defined 
+similarly.
+
+Sometimes, the time series $x_t$ may not be stationary but $\Delta^d x_t$
+could be. If we can fit an $ARMA(p, q)$ model to $\Delta^d x_t$ then we way
+that an $ARIMA(p, d, q)$ model fits $x_t$. ARIMA stands for **A**uto-**R**egressive
+**I**ntegrated **M**oving **A**verage. 
+
+If $\Delta^d x_t$ is the $d$-th difference of $x_t$ then $x_t$ is the $d$-th
+integral of $\Delta^d x_t$. Hence the word **I**ntegrated in ARIMA.
